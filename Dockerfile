@@ -5,11 +5,11 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     apk --no-cache --no-progress add curl bash iptables pcre openssl dnsmasq ipset iproute2 && \
     sed -i 's/mirrors.aliyun.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories
 
-COPY iplist.txt chnroute.txt  /tmp
-
 RUN cd /tmp && \
 	wget https://raw.githubusercontent.com/wxlg1117/ss-tun2socks/master/chinadns/chinadns.arm64 && \
 	mv chinadns.arm64 chinadns && \
+	wget https://raw.githubusercontent.com/shadowsocks/ChinaDNS/master/chnroute.txt && \
+	wget https://raw.githubusercontent.com/shadowsocks/ChinaDNS/master/iplist.txt && \
 	wget https://raw.githubusercontent.com/wxlg1117/ss-tun2socks/master/dnsforwarder/dnsforwarder.arm64 && \
 	mv dnsforwarder.arm64 dnsforwarder && \
 	install -c /tmp/chinadns /usr/local/bin && \
