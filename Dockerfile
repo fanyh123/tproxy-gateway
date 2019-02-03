@@ -1,13 +1,13 @@
 FROM arm64v8/alpine
 
-COPY iplist.txt chnroute.txt  /tmp
 
 RUN apk --no-cache --no-progress upgrade && \
     apk --no-cache --no-progress add bash iptables pcre openssl dnsmasq ipset iproute2 && \
     sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
     apk --no-cache --no-progress add curl && \
-    sed -i 's/mirrors.aliyun.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories && \
-    rm -rf /tmp/*
+    sed -i 's/mirrors.aliyun.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories
+
+COPY iplist.txt chnroute.txt  /tmp
 
 RUN cd /tmp && \
 	wget https://raw.githubusercontent.com/wxlg1117/ss-tun2socks/master/chinadns/chinadns.arm64 && \
@@ -16,7 +16,8 @@ RUN cd /tmp && \
 	mv dnsforwarder.arm64 dnsforwarder
 	/usr/bin/install -c /tmp/chinadns /usr/local/bin && \
 	/usr/bin/install -c -m 644 /tmp/iplist.txt /tmp/chnroute.txt /usr/local/share && \
-	/usr/bin/install -c /tmp/dnsforwarder /usr/local/bin
+	/usr/bin/install -c /tmp/dnsforwarder /usr/local/bin && \
+	rm -rf /tmp/*
 
 RUN mkdir -p /v2ray && \
     cd /v2ray && \
@@ -35,6 +36,8 @@ RUN cd / && mkdir -p /ss-tproxy &&\
 RUN mkdir -p /koolproxy && cd /koolproxy && \
 	wget https://koolproxy.com/downloads/arm && \
 	mv arm koolproxy && \
-	chmod +x koolproxy && chown -R daemon:daemon /koolproxy
+	chmod +x koolproxy && \
+	./koolproxy --cert && \
+	chown -R daemon:daemon /koolproxy
 
 ENTRYPOINT ["/usr/local/bin/ss-tproxy start"]
