@@ -14,9 +14,9 @@ RUN cd /tmp && \
 	mv chinadns.arm64 chinadns && \
 	wget https://raw.githubusercontent.com/wxlg1117/ss-tun2socks/master/dnsforwarder/dnsforwarder.arm64 && \
 	mv dnsforwarder.arm64 dnsforwarder
-	/usr/bin/install -c /tmp/chinadns /usr/local/bin && \
-	/usr/bin/install -c -m 644 /tmp/iplist.txt /tmp/chnroute.txt /usr/local/share && \
-	/usr/bin/install -c /tmp/dnsforwarder /usr/local/bin && \
+	install -c /tmp/chinadns /usr/local/bin && \
+	install -c -m 644 /tmp/iplist.txt /tmp/chnroute.txt /usr/local/share && \
+	install -c /tmp/dnsforwarder /usr/local/bin && \
 	rm -rf /tmp/*
 
 RUN mkdir -p /v2ray && \
