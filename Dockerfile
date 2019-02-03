@@ -1,5 +1,6 @@
 FROM arm64v8/alpine
 
+RUN ["cross-build-start"]
 
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
     apk --no-cache --no-progress upgrade && \
@@ -39,4 +40,5 @@ RUN mkdir -p /koolproxy && cd /koolproxy && \
 	./koolproxy --cert && \
 	chown -R daemon:daemon /koolproxy
 
+RUN ["cross-build-end"]
 ENTRYPOINT ["/usr/local/bin/ss-tproxy start"]
