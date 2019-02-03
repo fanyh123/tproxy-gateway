@@ -1,10 +1,9 @@
 FROM arm64v8/alpine
 
 
-RUN apk --no-cache --no-progress upgrade && \
-    apk --no-cache --no-progress add bash iptables pcre openssl dnsmasq ipset iproute2 && \
-    sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
-    apk --no-cache --no-progress add curl && \
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    apk --no-cache --no-progress upgrade && \
+    apk --no-cache --no-progress add curl bash iptables pcre openssl dnsmasq ipset iproute2 && \
     sed -i 's/mirrors.aliyun.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories
 
 COPY iplist.txt chnroute.txt  /tmp
