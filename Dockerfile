@@ -1,21 +1,17 @@
-FROM multiarch/alpine:aarch64-edge
+FROM arm64v8/alpine
 
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
     apk --no-cache --no-progress upgrade && \
-    apk --no-cache --no-progress add curl bash iptables pcre openssl dnsmasq ipset iproute2 && \
+    apk --no-cache --no-progress add perl curl bash iptables pcre openssl dnsmasq ipset iproute2 && \
     sed -i 's/mirrors.aliyun.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories
 
 RUN cd /tmp && \
 	wget https://raw.githubusercontent.com/wxlg1117/ss-tun2socks/master/chinadns/chinadns.arm64 && \
 	mv chinadns.arm64 chinadns && \
-	wget https://raw.githubusercontent.com/shadowsocks/ChinaDNS/master/chnroute.txt && \
-	wget https://raw.githubusercontent.com/shadowsocks/ChinaDNS/master/iplist.txt && \
 	wget https://raw.githubusercontent.com/wxlg1117/ss-tun2socks/master/dnsforwarder/dnsforwarder.arm64 && \
 	mv dnsforwarder.arm64 dnsforwarder && \
 	install -c /tmp/chinadns /usr/local/bin && \
-	install -c -m 644 /tmp/iplist.txt /tmp/chnroute.txt /usr/local/share && \
 	install -c /tmp/dnsforwarder /usr/local/bin && \
-	echo "nameserver 114.114.114.114" > /etc/resolv.conf && \
 	rm -rf /tmp/*
 
 RUN mkdir -p /v2ray && \
