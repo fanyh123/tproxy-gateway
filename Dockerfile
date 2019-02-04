@@ -15,6 +15,7 @@ RUN cd /tmp && \
 	install -c /tmp/chinadns /usr/local/bin && \
 	install -c -m 644 /tmp/iplist.txt /tmp/chnroute.txt /usr/local/share && \
 	install -c /tmp/dnsforwarder /usr/local/bin && \
+	echo "nameserver 114.114.114.114" > /etc/resolv.conf
 	rm -rf /tmp/*
 
 RUN mkdir -p /v2ray && \
