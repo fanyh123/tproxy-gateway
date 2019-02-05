@@ -1,9 +1,9 @@
 FROM multiarch/alpine:aarch64-edge 
 
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
-    apk --no-cache --no-progress upgrade && \
-    apk --no-cache --no-progress add perl curl bash iptables pcre openssl dnsmasq ipset iproute2 && \
-    sed -i 's/mirrors.aliyun.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories
+	apk --no-cache --no-progress upgrade && \
+	apk --no-cache --no-progress add perl curl bash iptables pcre openssl dnsmasq ipset iproute2 && \
+	sed -i 's/mirrors.aliyun.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories
 
 RUN cd /tmp && \
 	wget https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/chinadns && \
@@ -13,11 +13,11 @@ RUN cd /tmp && \
 	rm -rf /tmp/*
 
 RUN mkdir -p /v2ray && \
-    cd /v2ray && \
-    wget https://raw.githubusercontent.com/v2ray/dist/master/v2ray-linux-arm64.zip && \
-    unzip v2ray-linux-arm64.zip && \
-    rm config.json v2ray-linux-arm64.zip && \
-    chmod +x v2ray v2ctl
+	cd /v2ray && \
+	wget https://raw.githubusercontent.com/v2ray/dist/master/v2ray-linux-arm64.zip && \
+	unzip v2ray-linux-arm64.zip && \
+	rm config.json v2ray-linux-arm64.zip && \
+	chmod +x v2ray v2ctl
 
 RUN cd / && mkdir -p /ss-tproxy &&\
 	wget https://github.com/zfl9/ss-tproxy/archive/v3-master.zip && \
@@ -34,4 +34,7 @@ RUN mkdir -p /koolproxy && cd /koolproxy && \
 	chmod +x koolproxy && \
 	chown -R daemon:daemon /koolproxy
 
-ENTRYPOINT ["/usr/local/bin/ss-tproxy start && tail -f /dev/null"]
+RUN echo -e "!/bin/sh\n\n/usr/local/bin/ss-tproxy start && tail -f /dev/null" > /init.sh
+	chmod +x /init.sh
+
+ENTRYPOINT ["/init.sh"]
