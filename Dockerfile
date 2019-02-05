@@ -34,4 +34,4 @@ RUN mkdir -p /koolproxy && cd /koolproxy && \
 	chmod +x koolproxy && \
 	chown -R daemon:daemon /koolproxy
 
-CMD ["/bin/sh", "/usr/local/bin/ss-tproxy", "start"]
+ENTRYPOINT ["/usr/local/bin/ss-tproxy start && tail -f /dev/null"]
