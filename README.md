@@ -127,6 +127,7 @@ chnroute.txt：chnroute for chinadns，不可配置
 容器中包含koolproxy，默认没有启动，需要在/to/path/config/ss-tproxy.conf最后加入：
 ```
 function post_start {
+	mkdir -p /etc/ss-tproxy/koolproxydata
 	chown -R daemon:daemon /etc/ss-tproxy/koolproxydata
     su -s/bin/sh -c'/koolproxy/koolproxy -d -l2 -p65080 -b/etc/ss-proxy/koolproxydata' daemon
     if [ "$proxy_tproxy" = 'true' ]; then
