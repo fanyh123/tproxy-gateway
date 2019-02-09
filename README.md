@@ -195,7 +195,7 @@ function post_stop {
   ]
 }
 ```
-##### koolproxy
+#### koolproxy:
 容器中包含koolproxy，默认没有启动，需要在`/to/path/config/ss-tproxy.conf`最后加入：
 ```
 function post_start {
@@ -241,5 +241,16 @@ docker run -d --name tproxy-gateway \
 
 ### 设置客户端
 设置客户端（或设置路由器DHCP）默认网关及DNS服务器为容器IP:10.1.1.254
+#### 关于IPv6 DNS
+使用过程中发现，若有ipv6分配，Android端会自动分配ipv6默认网关(主路由)为dns服务器地址，导致不走docker中的dns服务器，解决方案为将主路由的dnsmasq的上游路由改为tproxy-gateway。
+将主路由的`dnsmasq.conf`中加入：
+```
+no-resolv
+```
+并将`dnsmasq.servers`加入：
+```
+server=10.1.1.254
+```
+重启dnsmasq。
 
 ENJOY
