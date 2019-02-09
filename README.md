@@ -1,5 +1,6 @@
 ### 说明
 v2ray版ss-tproxy项目的docker，加入koolproxy，实现docker中的透明网关及广告过滤，目前为aarch64版本，用于PHICOMM N1。
+
 #### ss-tproxy
 [ss-tproxy](https://github.com/zfl9/ss-tproxy)是基于`dnsmasq + ipset`实现的透明代理解决方案。
 将配置好的ss-tproxy配置文件存放至/to/ptah/config：
@@ -88,8 +89,8 @@ function post_stop {
 ```
 {
   "log": {
-    "access": "/var/log/v2ray/access.log",
-    "error": "/var/log/v2ray/error.log",
+    "access": "/var/log/v2ray-access.log",
+    "error": "/var/log/v2ray-error.log",
     "loglevel": "warning"
   },
 
@@ -154,8 +155,8 @@ function post_stop {
 ```
 {
   "log": {
-    "access": "/var/log/v2ray/access.log",
-    "error": "/var/log/v2ray/error.log",
+    "access": "/var/log/v2ray-access.log",
+    "error": "/var/log/v2ray-error.log",
     "loglevel": "warning"
   },
 
@@ -170,8 +171,8 @@ function post_stop {
       },
       "streamSettings": {
         "sockopt": {
-          //"tproxy": "tproxy" // tproxy + tproxy
-          "tproxy": "redirect" // redirect + tproxy
+          # "tproxy": "tproxy" # tproxy + tproxy
+          "tproxy": "redirect" # redirect + tproxy
         }
       }
     }
