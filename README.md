@@ -250,6 +250,7 @@ no-resolv
 在主路由的`dnsmasq.servers`中加入：
 ```
 server=10.1.1.254
+server=114.114.114.114
 ```
 重启dnsmasq。
 
