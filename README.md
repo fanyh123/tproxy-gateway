@@ -11,7 +11,7 @@ chnroute.set：chnroute for ipset，不可配置
 chnroute.txt：chnroute for chinadns，不可配置
 ```
 具体配置方法见[ss-tproxy项目主页](https://github.com/zfl9/ss-tproxy)
-####ss-tproxy.conf 配置文件示例：
+#### ss-tproxy.conf 配置文件示例：
 ```
 ## mode
 #mode='global'
