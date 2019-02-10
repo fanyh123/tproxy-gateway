@@ -4,14 +4,14 @@ v2ray版ss-tproxy项目的docker，加入koolproxy，实现docker中的透明网
 ```
 mkdir -p ~/docker/tproxy-gateway
 echo "0       2       *       *       *       /init.sh" > ~/docker/tproxy-gateway/crontab
-wget -p ~/docker/tproxy-gateway https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/ss-tproxy.conf
+wget -P ~/docker/tproxy-gateway https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/ss-tproxy.conf
 # 编辑ss-config.conf
 
-wget -p ~/docker/tproxy-gateway https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/v2ray.conf
+wget -P ~/docker/tproxy-gateway https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/v2ray.conf
 # 编辑v2ray.conf
 
 docker network create -d macvlan --subnet=10.1.1.0/24 --gateway=10.1.1.1 -o parent=eth0 dMACvLan
-docker pull lisaac/tproxy-gateway
+docker pull lisaac/tproxy-gateway:`arch`
 docker run -d --name tproxy-gateway \
     -e TZ=Asia/Shanghai \
     --network dMACvLan --ip 10.1.1.254 \
@@ -19,7 +19,7 @@ docker run -d --name tproxy-gateway \
     restart unless-stopped \
     -v $HOME/docker/tproxy-gateway:/etc/ss-tproxy \
     -v $HOME/docker/tproxy-gateway/crontab:/etc/crontabs/root \
-    lisaac/tproxy-gateway
+    lisaac/tproxy-gateway:`arch`
 ```
 #### ss-tproxy
 [ss-tproxy](https://github.com/zfl9/ss-tproxy)是基于`dnsmasq + ipset`实现的透明代理解决方案。
@@ -259,7 +259,7 @@ docker run -d --name tproxy-gateway \
     restart unless-stopped \
     -v /to/path/config:/etc/ss-tproxy \
     -v /to/path/crontab:/etc/crontabs/root \
-    lisaac/tproxy-gateway
+    lisaac/tproxy-gateway:`arch`
 ```
  - `--ip 10.1.1.254` 指定容器的地址
  - `-v /to/path/config:/etc/ss-tproxy` 指定配置文件目录，至少需要ss-tproxy.conf及v2ray.conf
