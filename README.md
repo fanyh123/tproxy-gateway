@@ -199,8 +199,13 @@ function post_stop {
 容器中包含koolproxy，默认没有启动，需要在`/to/path/config/ss-tproxy.conf`最后加入：
 ```
 function post_start {
+<<<<<<< HEAD
+	mkdir -p /etc/ss-tproxy/koolproxydata
+	chown -R daemon:daemon /etc/ss-tproxy/koolproxydata
+=======
     mkdir -p /etc/ss-tproxy/koolproxydata
     chown -R daemon:daemon /etc/ss-tproxy/koolproxydata
+>>>>>>> 6d4bb196e4775d99cfe9c434de9f3f698cc8a9b2
     su -s/bin/sh -c'/koolproxy/koolproxy -d -l2 -p65080 -b/etc/ss-proxy/koolproxydata' daemon
     if [ "$proxy_tproxy" = 'true' ]; then
         iptables -t mangle -I SSTP_OUT -m owner ! --uid-owner daemon -p tcp -m multiport --dports 80,443 -j RETURN
