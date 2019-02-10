@@ -7,9 +7,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
 RUN cd /tmp && \
 	wget https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/chinadns && \
-	wget https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/dnsforwarder && \
 	install -c /tmp/chinadns /usr/local/bin && \
-	install -c /tmp/dnsforwarder /usr/local/bin && \
 	rm -rf /tmp/*
 
 RUN mkdir -p /v2ray && \
@@ -34,7 +32,7 @@ RUN mkdir -p /koolproxy && cd /koolproxy && \
 	chmod +x koolproxy && \
 	chown -R daemon:daemon /koolproxy
 
-RUN echo -e "#!/bin/sh\n\n/usr/local/bin/ss-tproxy start && tail -f /dev/null" > /init.sh && \
-	chmod +x /init.sh
+COPY init.sh /
+RUN chmod +x /init.sh
 
 CMD ["/init.sh"]
