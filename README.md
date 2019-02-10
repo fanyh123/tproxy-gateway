@@ -16,7 +16,7 @@ docker run -d --name tproxy-gateway \
     -e TZ=Asia/Shanghai \
     --network dMACvLan --ip 10.1.1.254 \
     --privileged \
-    restart unless-stopped \
+    --restart unless-stopped \
     -v $HOME/docker/tproxy-gateway:/etc/ss-tproxy \
     -v $HOME/docker/tproxy-gateway/crontab:/etc/crontabs/root \
     lisaac/tproxy-gateway:`arch`
@@ -256,7 +256,7 @@ docker run -d --name tproxy-gateway \
     -e TZ=Asia/Shanghai \
     --network dMACvLan --ip 10.1.1.254 \
     --privileged \
-    restart unless-stopped \
+    --restart unless-stopped \
     -v /to/path/config:/etc/ss-tproxy \
     -v /to/path/crontab:/etc/crontabs/root \
     lisaac/tproxy-gateway:`arch`

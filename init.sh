@@ -25,6 +25,6 @@ echo "`date +%Y-%m-%d\ %T` flushing gfwlist.."
 echo "`date +%Y-%m-%d\ %T` flushing dnscache.."
 /usr/local/bin/ss-tproxy flush-dnscache
 killall crond
-grep -n '^[^#]*/init.sh' /etc/crontabs/root && crond || killall crond
+grep -n '^[^#]*/init.sh' /etc/crontabs/root && crond
 echo "`date +%Y-%m-%d\ %T` staring tproxy-gateway.."
 /usr/local/bin/ss-tproxy restart && tail -f /dev/null
