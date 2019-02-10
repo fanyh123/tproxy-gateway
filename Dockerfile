@@ -1,9 +1,12 @@
 FROM multiarch/alpine:aarch64-edge 
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+ENV TZ=Asia/Shanghai
+
+RUN	sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
 	apk --no-cache --no-progress upgrade && \
-	apk --no-cache --no-progress add perl curl bash iptables pcre openssl dnsmasq ipset iproute2 && \
-	sed -i 's/mirrors.aliyun.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories
+	apk --no-cache --no-progress add perl curl bash iptables pcre openssl dnsmasq ipset iproute2 tzdata && \
+	sed -i 's/mirrors.aliyun.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories && \
+	ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN cd /tmp && \
 	wget https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/chinadns && \

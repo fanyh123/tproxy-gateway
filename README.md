@@ -199,13 +199,8 @@ function post_stop {
 容器中包含koolproxy，默认没有启动，需要在`/to/path/config/ss-tproxy.conf`最后加入：
 ```
 function post_start {
-<<<<<<< HEAD
-	mkdir -p /etc/ss-tproxy/koolproxydata
-	chown -R daemon:daemon /etc/ss-tproxy/koolproxydata
-=======
     mkdir -p /etc/ss-tproxy/koolproxydata
     chown -R daemon:daemon /etc/ss-tproxy/koolproxydata
->>>>>>> 6d4bb196e4775d99cfe9c434de9f3f698cc8a9b2
     su -s/bin/sh -c'/koolproxy/koolproxy -d -l2 -p65080 -b/etc/ss-proxy/koolproxydata' daemon
     if [ "$proxy_tproxy" = 'true' ]; then
         iptables -t mangle -I SSTP_OUT -m owner ! --uid-owner daemon -p tcp -m multiport --dports 80,443 -j RETURN
@@ -238,10 +233,30 @@ docker network create -d macvlan --subnet=10.1.1.0/24 --gateway=10.1.1.1 -o pare
 运行容器:
 ```
 docker run -d --name tproxy-gateway \
-    --network dMACvLan --ip 10.1.1.254\
+    -e TZ=Asia/Shanghai \
+    --network dMACvLan --ip 10.1.1.254 \
     --privileged \
+    restart unless-stopped \
     -v /to/path/config:/etc/ss-tproxy \
+    -v /to/path/crontab:/etc/crontabs/root \
     lisaac/tproxy-gateway
+```
+ - `--ip 10.1.1.254` 指定容器的地址
+ - `-v /to/path/config:/etc/ss-tproxy` 指定配置文件目录，至少需要ss-tproxy.conf及v2ray.conf
+ - `-v /to/path/crontab:/etc/crontabs/root` 指定crontab文件，详情查看规则更新
+启动后会自动更新规则，根据网络情况，启动可能有所滞后，可以使用`docker logs tproxy-gateway`查看容器情况。
+
+### 规则更新
+若在使用中需要更新规则，则只需要重启容器即可：`docker restart tproxy-gateway`。
+自动更新，只需要将此命令行加入系统crontab中即可。
+
+另外容器中也包含了自动更新的钩子，在创建容器时，加入`-v /to/path/crontab:/etc/crontabs/root`参数。
+以下为每天2点自动更新的crontab示例：
+```
+# do daily/weekly/monthly maintenance
+# min   hour    day     month   weekday command
+0       2       *       *       *       /init.sh
+
 ```
 
 ### 设置客户端
