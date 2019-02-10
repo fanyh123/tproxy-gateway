@@ -1,5 +1,5 @@
 ### 说明
-v2ray版ss-tproxy项目的docker，加入koolproxy，实现docker中的透明网关及广告过滤，目前为aarch64版本，用于PHICOMM N1。
+v2ray版ss-tproxy项目的docker，加入koolproxy，实现docker中的透明网关及广告过滤，目前有x86_64及aarch64两个版本，aarch64版本用于PHICOMM N1。
 ### 快速开始
 ```
 mkdir -p ~/docker/tproxy-gateway

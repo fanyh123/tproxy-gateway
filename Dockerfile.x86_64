@@ -1,4 +1,4 @@
-FROM multiarch/alpine:aarch64-edge 
+FROM alpine
 
 ENV TZ=Asia/Shanghai
 
@@ -10,9 +10,9 @@ RUN	sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
 RUN mkdir -p /v2ray && \
 	cd /v2ray && \
-	wget https://raw.githubusercontent.com/v2ray/dist/master/v2ray-linux-arm64.zip && \
-	unzip v2ray-linux-arm64.zip && \
-	rm config.json v2ray-linux-arm64.zip && \
+	wget https://raw.githubusercontent.com/v2ray/dist/master/v2ray-linux-64.zip && \
+	unzip v2ray-linux-64.zip && \
+	rm config.json v2ray-linux-64.zip && \
 	chmod +x v2ray v2ctl
 
 RUN cd / && mkdir -p /ss-tproxy &&\
@@ -25,13 +25,13 @@ RUN cd / && mkdir -p /ss-tproxy &&\
 	rm -rf /ss-tproxy
 
 RUN mkdir -p /koolproxy && cd /koolproxy && \
-	wget https://koolproxy.com/downloads/arm && \
-	mv arm koolproxy && \
+	wget https://koolproxy.com/downloads/x86_64 && \
+	mv x86_64 koolproxy && \
 	chmod +x koolproxy && \
 	chown -R daemon:daemon /koolproxy
 
 COPY init.sh /
-COPY chinadns /tmp
+COPY chinadns.x86_64 /tmp/chinadns
 
 RUN chmod +x /init.sh && \
 	install -c /tmp/chinadns /usr/local/bin && \
