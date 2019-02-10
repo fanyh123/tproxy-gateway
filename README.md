@@ -1,6 +1,26 @@
 ### 说明
 v2ray版ss-tproxy项目的docker，加入koolproxy，实现docker中的透明网关及广告过滤，目前为aarch64版本，用于PHICOMM N1。
+### 快速开始
+```
+mkdir -p ~/docker/tproxy-gateway
+echo "0       2       *       *       *       /init.sh" > ~/docker/tproxy-gateway/crontab
+wget -p ~/docker/tproxy-gateway https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/ss-tproxy.conf
+# 编辑ss-config.conf
 
+wget -p ~/docker/tproxy-gateway https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/v2ray.conf
+# 编辑v2ray.conf
+
+docker network create -d macvlan --subnet=10.1.1.0/24 --gateway=10.1.1.1 -o parent=eth0 dMACvLan
+docker pull lisaac/tproxy-gateway
+docker run -d --name tproxy-gateway \
+    -e TZ=Asia/Shanghai \
+    --network dMACvLan --ip 10.1.1.254 \
+    --privileged \
+    restart unless-stopped \
+    -v $HOME/docker/tproxy-gateway:/etc/ss-tproxy \
+    -v $HOME/docker/tproxy-gateway/crontab:/etc/crontabs/root \
+    lisaac/tproxy-gateway
+```
 #### ss-tproxy
 [ss-tproxy](https://github.com/zfl9/ss-tproxy)是基于`dnsmasq + ipset`实现的透明代理解决方案。
 将配置好的ss-tproxy配置文件存放至/to/ptah/config：
@@ -122,7 +142,7 @@ function post_stop {
               "id": "xxxxxxxxxxxxxxxxxxx",
               "alterId": 64,
               "email": "xxxxx",
-              "security": "aes-128-gcm"
+              "security": "auto"
             }
           ]
         }

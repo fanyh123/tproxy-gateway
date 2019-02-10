@@ -8,11 +8,6 @@ RUN	sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 	sed -i 's/mirrors.aliyun.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories && \
 	ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN cd /tmp && \
-	wget https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/chinadns && \
-	install -c /tmp/chinadns /usr/local/bin && \
-	rm -rf /tmp/*
-
 RUN mkdir -p /v2ray && \
 	cd /v2ray && \
 	wget https://raw.githubusercontent.com/v2ray/dist/master/v2ray-linux-arm64.zip && \
@@ -36,6 +31,10 @@ RUN mkdir -p /koolproxy && cd /koolproxy && \
 	chown -R daemon:daemon /koolproxy
 
 COPY init.sh /
-RUN chmod +x /init.sh
+COPY chinadns /tmp
+
+RUN chmod +x /init.sh && \
+	install -c /tmp/chinadns /usr/local/bin && \
+	rm -rf /tmp/*
 
 CMD ["/init.sh"]
