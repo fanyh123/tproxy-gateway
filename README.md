@@ -1,5 +1,5 @@
 ### 说明
-v2ray版ss-tproxy项目的docker，加入koolproxy，实现docker中的透明网关及广告过滤，目前有x86_64及aarch64两个版本，aarch64版本用于PHICOMM N1。
+v2ray版ss-tproxy项目的docker，加入koolproxy，实现docker中的透明网关及广告过滤，目前有`x86_64`及`aarch64`两个版本，`aarch64`版本用于PHICOMM N1。
 ### 快速开始
 ```
 mkdir -p ~/docker/tproxy-gateway
@@ -23,7 +23,7 @@ docker run -d --name tproxy-gateway \
 ```
 #### ss-tproxy
 [ss-tproxy](https://github.com/zfl9/ss-tproxy)是基于`dnsmasq + ipset`实现的透明代理解决方案。
-将配置好的ss-tproxy配置文件存放至/to/ptah/config：
+将配置好的`ss-tproxy`配置文件存放至`/to/ptah/config`：
 ```
 ss-tproxy.conf：配置文件
 gfwlist.txt：gfwlist 域名文件，不可配置
@@ -216,7 +216,7 @@ function post_stop {
 }
 ```
 #### koolproxy:
-容器中包含koolproxy，默认没有启动，需要在`/to/path/config/ss-tproxy.conf`最后加入：
+容器中包含`koolproxy`，默认没有启动，需要在`/to/path/config/ss-tproxy.conf`最后加入：
 ```
 function post_start {
     mkdir -p /etc/ss-tproxy/koolproxydata
@@ -290,7 +290,6 @@ no-resolv
 在主路由的`dnsmasq.servers`中加入：
 ```
 server=10.1.1.254
-server=114.114.114.114
 ```
 重启dnsmasq。
 
