@@ -248,13 +248,18 @@ function post_stop {
 ### 运行tproxy-gateway
 新建docker macvlan网络，网络地址为内网lan地址及默认网关:
 ```
-docker network create -d macvlan --subnet=10.1.1.0/24 --gateway=10.1.1.1 -o parent=eth0 dMACvLan
+docker network create -d macvlan \
+    --subnet=10.1.1.0/24 --gateway=10.1.1.1 \
+    --ipv6 --subnet=fe80::/10 --gateway=fe80::1 \
+    -o parent=eth0 \
+    -o macvlan_mode=bridge \
+    dMACvLan
 ```
 运行容器:
 ```
 docker run -d --name tproxy-gateway \
     -e TZ=Asia/Shanghai \
-    --network dMACvLan --ip 10.1.1.254 \
+    --network dMACvLan --ip 10.1.1.254 --ip6 fe80::fe80\
     --privileged \
     --restart unless-stopped \
     -v /to/path/config:/etc/ss-tproxy \
@@ -281,16 +286,31 @@ docker run -d --name tproxy-gateway \
 
 ### 设置客户端
 设置客户端（或设置路由器DHCP）默认网关及DNS服务器为容器IP:10.1.1.254
-#### 关于IPv6 DNS
-使用过程中发现，若有ipv6分配，Android端会自动分配ipv6默认网关(主路由)为dns服务器地址，导致不走docker中的dns服务器，解决方案为将主路由的dnsmasq的上游DNS指向容器(tproxy-gateway)。
-将主路由的`dnsmasq.conf`中加入：
-```
-no-resolv
-```
-在主路由的`dnsmasq.servers`中加入：
-```
-server=10.1.1.254
-```
-重启dnsmasq。
+以openwrt为例，在`/etc/config/dhcp`中`config dhcp 'lan'`段加入：
 
+```
+  list dhcp_option '6,10.1.1.254'
+  list dhcp_option '3,10.1.1.254'
+```
+#### 关于IPv6 DNS
+使用过程中发现，若有ipv6分配，Android端会自动分配ipv6默认网关(主路由)为dns服务器地址，导致不走docker中的dns服务器。
+解决方案是修改ipv6的通告dns服务器为容器ipv6地址（fe80::fe80）
+
+#### 关于宿主机出口
+由于docker网络采用macvlan的bridge模式，宿主机虽然与容器在同一网段，但是相互之间是无法通信的，所以无法通过tproxy-gateway透明代理。
+解决方案1是让宿主机直接走主路由，不经过代理网关：
+```
+ip route add default via 10.1.1.1 dev eth0 # 设置静态路由
+echo "nameserver 10.1.1.1" > /etc/resolv.conf # 设置静态dns服务器
+```
+解决方案2是利用多个macvlan接口之间是互通的原理，新建一个macvlan虚拟接口：
+```
+ip link add link eth0 mac0 type macvlan mode bridge # 在eth0接口下添加一个macvlan虚拟接口
+ip addr add 10.1.1.25/24 brd + dev mac0 # 为mac0 分配ip地址
+ip route add default via 10.1.1.2 dev mac0 # 设置静态路由
+ip link set mac0 up
+
+# ip addr add 10.1.1.250/24 brd + dev eth0 # eth0的ip地址设为静态地址：
+# echo "nameserver 10.1.1.254" > /etc/resolv.conf # 设置静态dns服务器
+```
 ENJOY

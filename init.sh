@@ -27,4 +27,7 @@ echo "`date +%Y-%m-%d\ %T` flushing dnscache.."
 killall crond
 grep -n '^[^#]*/init.sh' /etc/crontabs/root && crond
 echo "`date +%Y-%m-%d\ %T` staring tproxy-gateway.."
-/usr/local/bin/ss-tproxy restart && tail -f /dev/null
+/usr/local/bin/ss-tproxy restart && \
+echo -e "IPv4 gateway & dns server: \n`ip addr show eth0 |grep 'inet ' | awk '{print $2}' |sed 's/\/.*//g'`" && \
+echo -e "IPv6 dns server: \n`ip addr show eth0 |grep 'inet6 ' | awk '{print $2}' |sed 's/\/.*//g'`" && \
+tail -f /dev/null
