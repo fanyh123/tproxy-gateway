@@ -13,7 +13,7 @@ RUN mkdir -p /v2ray && \
 	wget https://raw.githubusercontent.com/v2ray/dist/master/v2ray-linux-arm64.zip && \
 	unzip v2ray-linux-arm64.zip && \
 	rm config.json v2ray-linux-arm64.zip && \
-	chmod +x v2ray v2ctl
+	chmod +x v2ray v2ctl && mkdir -p /copy_config
 
 RUN cd / && mkdir -p /ss-tproxy &&\
 	wget https://github.com/zfl9/ss-tproxy/archive/v3-master.zip && \
@@ -33,6 +33,7 @@ RUN mkdir -p /koolproxy && cd /koolproxy && \
 
 COPY init.sh /
 COPY chinadns.aarch64 /tmp/chinadns
+COPY ss-tproxy.conf v2ray.conf gfwlist.ext /copy_config
 
 RUN chmod +x /init.sh && \
 	install -c /tmp/chinadns /usr/local/bin && \

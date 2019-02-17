@@ -1,17 +1,38 @@
-### 说明
-v2ray版ss-tproxy项目的docker，加入koolproxy，实现docker中的透明网关及广告过滤，目前有`x86_64`及`aarch64`两个版本，`aarch64`版本用于PHICOMM N1。
-### 快速开始
-```
+# 说明
+v2ray版ss-tproxy项目的docker，加入koolproxy，实现docker中的透明网关及广告过滤，目前有`x86_64`及`aarch64`两个版本，`aarch64`适用于PHICOMM N1。
+# 快速开始
+```bash
+# 配置文件目录
 mkdir -p ~/docker/tproxy-gateway
 echo "0       2       *       *       *       /init.sh" > ~/docker/tproxy-gateway/crontab
+
+# 下载gfwlist.ext黑名单文件
+wget -p ~/docker/tproxy-gateway https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/gfwlist.ext
+
+# 下载ss-config.conf配置文件
 wget -P ~/docker/tproxy-gateway https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/ss-tproxy.conf
-# 编辑ss-config.conf
 
-wget -P ~/docker/tproxy-gateway https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/v2ray.conf
-# 编辑v2ray.conf
+# 配置ss-config.conf
+vi ~/docker/tproxy-gateway/ss-config.conf
 
-docker network create -d macvlan --subnet=10.1.1.0/24 --gateway=10.1.1.1 -o parent=eth0 dMACvLan
+# 下载v2ray.conf配置文件
+wget -P ~/docker/tproxy-gateway https://raw.githubusercontent.com/lisaac/tproxy-gateway/master/v2ray.conf 
+
+# 配置v2ray.conf
+vi ~/docker/tproxy-gateway/v2ray.conf
+
+# 创建docker network
+docker network create -d macvlan \
+    --subnet=10.1.1.0/24 --gateway=10.1.1.1 \
+    --ipv6 --subnet=fe80::/10 --gateway=fe80::1 \
+    -o parent=eth0 \
+    -o macvlan_mode=bridge \
+    dMACvLan
+
+# 拉取docker镜像
 docker pull lisaac/tproxy-gateway:`arch`
+
+# 运行容器
 docker run -d --name tproxy-gateway \
     -e TZ=Asia/Shanghai \
     --network dMACvLan --ip 10.1.1.254 \
@@ -20,24 +41,32 @@ docker run -d --name tproxy-gateway \
     -v $HOME/docker/tproxy-gateway:/etc/ss-tproxy \
     -v $HOME/docker/tproxy-gateway/crontab:/etc/crontabs/root \
     lisaac/tproxy-gateway:`arch`
+
+# 查看网关运行情况
+docker logs tproxy-gateway
 ```
-#### ss-tproxy
+配置客户端网关及DNS
+
+# 配置文件
+本容器由ss-tproxy + v2ray 组成，配置文件放至`/to/path/config`，并挂载至容器，主要配置文件为：
+```bash
+/to/ptah/config
+    |- ss-tproxy.conf：配置文件
+    |- gfwlist.ext：gfwlsit 黑名单文件，可配置
+    |- v2ray.conf: v2ray 配置文件
+```
+
+## `ss-tproxy`
 [ss-tproxy](https://github.com/zfl9/ss-tproxy)是基于`dnsmasq + ipset`实现的透明代理解决方案。
-将配置好的`ss-tproxy`配置文件存放至`/to/ptah/config`：
-```
-ss-tproxy.conf：配置文件
-gfwlist.txt：gfwlist 域名文件，不可配置
-gfwlist.ext：gfwlsit 黑名单文件，可配置
-chnroute.set：chnroute for ipset，不可配置
-chnroute.txt：chnroute for chinadns，不可配置
-```
-具体配置方法见[ss-tproxy项目主页](https://github.com/zfl9/ss-tproxy)
-#### ss-tproxy.conf 配置文件示例：
-```
+
+具体配置方法见[ss-tproxy项目主页](https://github.com/zfl9/ss-tproxy)。
+
+### ss-tproxy.conf 配置文件示例：
+```bash
 ## mode
 #mode='global'
-#mode='gfwlist'
-mode='chnroute'
+mode='gfwlist'
+#mode='chnroute'
 
 ## proxy
 proxy_tproxy='true'   # 纯TPROXY方式
@@ -78,35 +107,10 @@ file_gfwlist_txt='/etc/ss-tproxy/gfwlist.txt'   # gfwlist 黑名单文件 (默�
 file_gfwlist_ext='/etc/ss-tproxy/gfwlist.ext'   # gfwlist 黑名单文件 (扩展规则)
 file_chnroute_txt='/etc/ss-tproxy/chnroute.txt' # chnroute 地址段文件 (chinadns)
 file_chnroute_set='/etc/ss-tproxy/chnroute.set' # chnroute 地址段文件 (iptables)
-
-## Koolproxy
-function post_start {
-    mkdir -p /etc/ss-tproxy/koolproxydata
-    chown -R daemon:daemon /etc/ss-tproxy/koolproxydata
-    su -s/bin/sh -c'/koolproxy/koolproxy -d -l2 -p65080 -b/etc/ss-tproxy/koolproxydata' daemon
-    if [ "$proxy_tproxy" = 'true' ]; then
-        iptables -t mangle -I SSTP_OUT -m owner ! --uid-owner daemon -p tcp -m multiport --dports 80,443 -j RETURN
-        iptables -t nat    -I SSTP_OUT -m owner ! --uid-owner daemon -p tcp -m multiport --dports 80,443 -j REDIRECT --to-ports 65080
-        for intranet in "${ipts_intranet[@]}"; do
-            iptables -t mangle -I SSTP_PRE -m mark ! --mark $ipts_rt_mark -p tcp -m multiport --dports 80,443 -s $intranet ! -d $intranet -j RETURN
-            iptables -t nat    -I SSTP_PRE -m mark ! --mark $ipts_rt_mark -p tcp -m multiport --dports 80,443 -s $intranet ! -d $intranet -j REDIRECT --to-ports 65080
-        done
-    else
-        iptables -t nat -I SSTP_OUT -m owner ! --uid-owner daemon -p tcp -m multiport --dports 80,443 -j REDIRECT --to-ports 65080
-        for intranet in "${ipts_intranet[@]}"; do
-            iptables -t nat -I SSTP_PRE -s $intranet ! -d $intranet -p tcp -m multiport --dports 80,443 -j REDIRECT --to-ports 65080
-        done
-    fi
-}
-
-function post_stop {
-    kill -9 $(pidof koolproxy) &>/dev/null
-}
 ```
-#### v2ray：
-请将v2ray配置文件命名为`v2ray.conf`存放至`ss-tproxy`配置目录（启动docker时配置的`/to/path/config`）
-##### vmess协议配置文件示例:
-```
+## `v2ray`
+### v2ray.con配置文件vmess协议(tls+ws)示例:
+```json
 {
   "log": {
     "access": "/var/log/v2ray-access.log",
@@ -171,8 +175,8 @@ function post_stop {
   }
 }
 ```
-##### ss协议配置文件示例:
-```
+### v2ray配置文件ss协议示例:
+```json
 {
   "log": {
     "access": "/var/log/v2ray-access.log",
@@ -191,8 +195,7 @@ function post_stop {
       },
       "streamSettings": {
         "sockopt": {
-          # "tproxy": "tproxy" # tproxy + tproxy
-          "tproxy": "redirect" # redirect + tproxy
+          "tproxy": "redirect"
         }
       }
     }
@@ -215,9 +218,9 @@ function post_stop {
   ]
 }
 ```
-#### koolproxy:
-容器中包含`koolproxy`，默认没有启动，需要在`/to/path/config/ss-tproxy.conf`最后加入：
-```
+## `koolproxy`
+容器中包含`koolproxy`，需要在`ss-tproxy.conf`最后加入一下脚本，则会随容器启动，若不需要，则删除这段脚本即可：
+```bash
 function post_start {
     mkdir -p /etc/ss-tproxy/koolproxydata
     chown -R daemon:daemon /etc/ss-tproxy/koolproxydata
@@ -241,13 +244,16 @@ function post_stop {
     kill -9 $(pidof koolproxy) &>/dev/null
 }
 ```
+### 开启 HTTPS 过滤
 默认没有启用https过滤，如需要启用https过滤，需要运行:
-```docker exec tproxy-gateway /koolproxy/koolproxy --cert -b /etc/ss-proxy/koolproxydata```
-并重启dokcer即可，证书文件在/etc/ss-proxy/koolproxydata/cert目录下
-
-### 运行tproxy-gateway
-新建docker macvlan网络，网络地址为内网lan地址及默认网关:
+```bash
+docker exec tproxy-gateway /koolproxy/koolproxy --cert -b /etc/ss-proxy/koolproxydata
 ```
+并重启容器，证书文件在宿主机的`/to/path/config/koolproxydata/cert`目录下。
+
+# 运行tproxy-gateway容器
+新建docker macvlan网络，配置网络地址为内网lan地址及默认网关:
+```bash
 docker network create -d macvlan \
     --subnet=10.1.1.0/24 --gateway=10.1.1.1 \
     --ipv6 --subnet=fe80::/10 --gateway=fe80::1 \
@@ -256,59 +262,70 @@ docker network create -d macvlan \
     dMACvLan
 ```
 运行容器:
-```
+```bash
 docker run -d --name tproxy-gateway \
     -e TZ=Asia/Shanghai \
-    --network dMACvLan --ip 10.1.1.254 --ip6 fe80::fe80\
+    --network dMACvLan --ip 10.1.1.254 --ip6 fe80::fe80 \
     --privileged \
     --restart unless-stopped \
     -v /to/path/config:/etc/ss-tproxy \
     -v /to/path/crontab:/etc/crontabs/root \
     lisaac/tproxy-gateway:`arch`
 ```
- - `--ip 10.1.1.254` 指定容器的地址
+ - `--ip 10.1.1.254` 指定容器ipv4地址
+ - `--ip6 fe80::fe80 ` 指定容器ipv6地址，如不指定自动分配，建议自动分配。若指定，容器重启后会提示ip地址被占用，只能重启docker服务才能启动，原因未知。
  - `-v /to/path/config:/etc/ss-tproxy` 指定配置文件目录，至少需要ss-tproxy.conf及v2ray.conf
  - `-v /to/path/crontab:/etc/crontabs/root` 指定crontab文件，详情查看规则更新
+
 启动后会自动更新规则，根据网络情况，启动可能有所滞后，可以使用`docker logs tproxy-gateway`查看容器情况。
 
-### 规则更新
-若在使用中需要更新规则，则只需要重启容器即可：`docker restart tproxy-gateway`。
-自动更新，只需要将此命令行加入系统crontab中即可。
-
-另外容器中也包含了自动更新的钩子，在创建容器时，加入`-v /to/path/crontab:/etc/crontabs/root`参数。
-以下为每天2点自动更新的crontab示例：
+# 规则自动更新
+若在使用中需要更新规则，则只需要重启容器即可：
 ```
+docker restart tproxy-gateway
+```
+
+自动更新，更新时会临时断网，需在创建容器时，加入`-v /to/path/crontab:/etc/crontabs/root`参数。
+以下为每天2点自动更新的`crontab`示例：
+```bash
 # do daily/weekly/monthly maintenance
 # min   hour    day     month   weekday command
 0       2       *       *       *       /init.sh
-
 ```
 
-### 设置客户端
+# 设置客户端
 设置客户端（或设置路由器DHCP）默认网关及DNS服务器为容器IP:10.1.1.254
+
 以openwrt为例，在`/etc/config/dhcp`中`config dhcp 'lan'`段加入：
 
 ```
   list dhcp_option '6,10.1.1.254'
   list dhcp_option '3,10.1.1.254'
 ```
-#### 关于IPv6 DNS
-使用过程中发现，若有ipv6分配，Android端会自动分配ipv6默认网关(主路由)为dns服务器地址，导致不走docker中的dns服务器。
-解决方案是修改ipv6的通告dns服务器为容器ipv6地址（fe80::fe80）
+# 关于IPv6 DNS
+使用过程中发现，若启用了IPv6，某些客户端(Android)会自动将DNS服务器地址指向默认网关(路由器)的ipv6地址，导致客户端不走docker中的dns服务器。
 
-#### 关于宿主机出口
-由于docker网络采用macvlan的bridge模式，宿主机虽然与容器在同一网段，但是相互之间是无法通信的，所以无法通过tproxy-gateway透明代理。
-解决方案1是让宿主机直接走主路由，不经过代理网关：
+解决方案是修改路由器中ipv6的`通告dns服务器`为容器ipv6地址。
+
+以openwrt为例，在`/etc/config/dhcp`中`config dhcp 'lan'`段加入：
 ```
+  list dns 'fe80::fe80'
+```
+
+# 关于宿主机出口
+由于docker网络采用`macvlan`的`bridge`模式，宿主机虽然与容器在同一网段，但是相互之间是无法通信的，所以无法通过`tproxy-gateway`透明代理。
+
+解决方案1是让宿主机直接走主路由，不经过代理网关：
+```bash
 ip route add default via 10.1.1.1 dev eth0 # 设置静态路由
 echo "nameserver 10.1.1.1" > /etc/resolv.conf # 设置静态dns服务器
 ```
 解决方案2是利用多个macvlan接口之间是互通的原理，新建一个macvlan虚拟接口：
-```
+```bash
 ip link add link eth0 mac0 type macvlan mode bridge # 在eth0接口下添加一个macvlan虚拟接口
-ip addr add 10.1.1.25/24 brd + dev mac0 # 为mac0 分配ip地址
-ip route add default via 10.1.1.2 dev mac0 # 设置静态路由
+ip addr add 10.1.1.250/24 brd + dev mac0 # 为mac0 分配ip地址
 ip link set mac0 up
+ip route add default via 10.1.1.254 dev mac0 # 设置静态路由
 
 # ip addr add 10.1.1.250/24 brd + dev eth0 # eth0的ip地址设为静态地址：
 # echo "nameserver 10.1.1.254" > /etc/resolv.conf # 设置静态dns服务器
