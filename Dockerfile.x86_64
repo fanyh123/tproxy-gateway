@@ -39,4 +39,4 @@ RUN chmod +x /init.sh && \
 	install -c /tmp/chinadns /usr/local/bin && \
 	rm -rf /tmp/*
 
-CMD ["/bin/bash","/init.sh","dameon"]
+CMD ["/init.sh","daemon"]
