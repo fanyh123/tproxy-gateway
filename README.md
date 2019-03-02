@@ -325,9 +325,12 @@ echo "nameserver 10.1.1.1" > /etc/resolv.conf # 设置静态dns服务器
 ip link add link eth0 mac0 type macvlan mode bridge # 在eth0接口下添加一个macvlan虚拟接口
 ip addr add 10.1.1.250/24 brd + dev mac0 # 为mac0 分配ip地址
 ip link set mac0 up
+ip route del default #删除默认路由
 ip route add default via 10.1.1.254 dev mac0 # 设置静态路由
-
-# ip addr add 10.1.1.250/24 brd + dev eth0 # eth0的ip地址设为静态地址：
-# echo "nameserver 10.1.1.254" > /etc/resolv.conf # 设置静态dns服务器
+echo "nameserver 10.1.1.254" > /etc/resolv.conf # 设置静态dns服务器
 ```
+
+# Docker Hub
+[https://hub.docker.com/r/lisaac/tproxy-gateway](https://hub.docker.com/r/lisaac/tproxy-gateway)
+
 ENJOY
