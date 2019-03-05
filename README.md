@@ -54,6 +54,7 @@ docker logs tproxy-gateway
     |- ss-tproxy.conf：配置文件
     |- gfwlist.ext：gfwlsit 黑名单文件，可配置
     |- v2ray.conf: v2ray 配置文件
+    |- hosts: 自定义hosts文件
 ```
 
 ## `ss-tproxy`
@@ -78,10 +79,11 @@ proxy_runcmd='/v2ray/v2ray -config /etc/ss-tproxy/v2ray.conf > /dev/null 2>&1 &'
 proxy_kilcmd='killall v2ray'  # 停止的命令行
 
 ## dnsmasq
-dnsmasq_cache_size='10240'              # DNS 缓存条目
-dnsmasq_cache_time='3600'               # DNS 缓存时间
-dnsmasq_log_enable='false'              # 是否记录日志
-dnsmasq_log_file='/var/log/dnsmasq.log' # 日志文件路径
+dnsmasq_cache_size='10240'                # DNS 缓存条目
+dnsmasq_cache_time='3600'                 # DNS 缓存时间
+dnsmasq_log_enable='false'                # 是否记录日志
+dnsmasq_log_file='/var/log/dnsmasq.log'   # 日志文件路径
+dnsmasq_addn_hosts='/etc/ss-tproxy/hosts' #自定义hosts文件路径
 
 ## chinadns
 chinadns_mutation='false'                # DNS 压缩指针
