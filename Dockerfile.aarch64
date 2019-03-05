@@ -20,6 +20,7 @@ RUN cd / && mkdir -p /ss-tproxy &&\
 	unzip -jd ss-tproxy v3-master.zip && rm v3-master.zip && \
 	sed -i 's/while umount \/etc\/resolv.conf; do :; done/while mount|grep overlay|grep \/etc\/resolv.conf; do umount \/etc\/resolv.conf; done/g' /ss-tproxy/ss-tproxy && \
 	sed -i 's/60053/53/g' /ss-tproxy/ss-tproxy && \
+	sed -i '/no-resolv/i\addn-hosts=$dnsmasq_addn_hosts' /ss-tproxy/ss-tproxy && \
 	install -c /ss-tproxy/ss-tproxy /usr/local/bin && \
 	mkdir -m 0755 -p /etc/ss-tproxy && chown -R root:root /etc/ss-tproxy && \
 	install -c /ss-tproxy/ss-tproxy.conf /ss-tproxy/gfwlist.* /ss-tproxy/chnroute.* /etc/ss-tproxy && \
